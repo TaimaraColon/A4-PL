@@ -176,7 +176,7 @@ class Blockchain:
 
     def new_block(self, proof: str, previous_hash: str = None) -> Dict[str, Any]:
         block = {
-            'index': len(self.chain)+1,
+            'index': len(self.chain),
             'timestamp': time.time(),
             'data': self.current_data,
             'proof': proof,
