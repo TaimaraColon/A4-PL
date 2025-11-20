@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blockchain Command Prompt</title>
+    <style>
+        /* BASE STYLES */
+        body {
+            font-family: monospace;
+            background-color: #2c2c2c; /* Dark Grey Background */
+            color: #f5dce0; /* Pale Pink Text Color */
+            padding: 20px;
+            font-size: 18px;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+        }
+        h1 {
+            color: #f5dce0; /* Brighter Pink for Heading */
+            border-bottom: 2px solid #f5dce0;
+            padding-bottom: 5px;
+        }
+
+        /* GENERAL SQUARE STYLES */
+        .cli-square {
+            background-color: #383838; /* Slightly Lighter Dark Grey */
+            border: 2px solid #f8b6c1; /* Pink Border */
+            padding: 15px;
+            margin-bottom: 15px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            box-shadow: 0 0 8px rgba(223, 170, 179, 0.4); /* Soft Pink Glow */
+        }
+        .cli-square h3 {
+            color: #f5dce0; /* Light Pink for titles */
+            margin-top: 0;
+            margin-bottom: 10px;
+            border-bottom: 1px dashed #ffccdd50;
+            padding-bottom: 5px;
+        }
+
+        /* INPUT AREA */
+        .prompt-line {
+            display: flex;
+            align-items: center;
+        }
+        
+        #command-input {
+            width: calc(100% - 65px);
+            padding: 8px;
+            background-color: #383838;
+            border: none;
+            color: #ffccdd;
+            box-sizing: border-box;
+            font-family: monospace;
+            outline: none;
+        }
+
+        /* RUN BUTTON */
+        button {
+            width: 60px;
+            padding: 8px;
+            background-color: #f5dce0; 
+            color: #2c2c2c; 
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            flex-shrink: 0;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #f5dce0; 
+        }
+        
+        .prompt-symbol {
+            margin-right: 5px;
+            flex-shrink: 0;
+            color: #f5dce0; 
+            font-size: 1.1em;
+        }
+        /* Specific height for the two main output/history boxes */
+        #history-output, #server-output {
+            min-height: 150px;
+            max-height: 250px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Blockchain Interpreter</h1>
+        <p style="color: #f5dce0;">Enter command and press Run:</p>
+        
+        <div class="cli-square">
+            <div class="prompt-line">
+                <span class="prompt-symbol">></span>
+                <input type="text" id="command-input" placeholder="e.g., block b1=(client:str) add b1=(client:'Alice') mine b1" autofocus>
+                <button onclick="executeCommand()">Run</button>
+            </div>
+        </div>
+
+        <div id="history-output" class="cli-square">
+            <h3>Command History</h3>
+            <span style="color: #f5dce0;">Commands entered will appear here.</span>
+        </div>
+
+        <div id="server-output" class="cli-square">
+            <h3>Server Response</h3>
+            <span style="color: #f5dce0;">Server messages and blockchain output will appear here.</span>
+        </div>
+    </div>
+
+    <script>
+        const historyDiv = document.getElementById('history-output');
+        const outputDiv = document.getElementById('server-output');
+        const inputField = document.getElementById('command-input');
+        const promptSymbol = '<span class="prompt-symbol">></span> ';
+
+        // Handles the Enter key press
+        inputField.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                executeCommand();
+            }
+        });
+
+        // Function to send the command to the Flask server
+        function executeCommand() {
+            const command = inputField.value.trim();
+            if (!command) return;
+
+            // 1. Display the command in the HISTORY area
+            historyDiv.innerHTML += promptSymbol + command + '\n';
+            historyDiv.scrollTop = historyDiv.scrollHeight; // Auto-scroll history
+            
+            inputField.value = ''; // Clear input
+
+            // Clear previous output message
+            outputDiv.innerHTML = '<h3>Server Response</h3><span style="color: #ffccdd;">Processing...</span>';
+
+            // 2. Send command to the Flask backend
+            fetch('/execute', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ command: command })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // 3. Display the response output in the dedicated OUTPUT area
+                outputDiv.innerHTML = '<h3>Server Response</h3>'; // Clear 'Processing...'
+                outputDiv.innerHTML += data.output.replace(/\n/g, '<br>');
+                
+                // 4. Auto-scroll to the bottom of the output
+                outputDiv.scrollTop = outputDiv.scrollHeight;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                outputDiv.innerHTML = '<h3>Server Response</h3>'; // Clear 'Processing...'
+                outputDiv.innerHTML += '<span style="color: red;">[Connection Error: Could not reach server.]</span><br>';
+                outputDiv.scrollTop = outputDiv.scrollHeight;
+            });
+        }
+    </script>
+</body>
+</html>
