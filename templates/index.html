@@ -41,7 +41,7 @@
             padding-bottom: 5px;
         }
 
-        /* INPUT AREA */
+        /* INPUT SECTION */
         .prompt-line {
             display: flex;
             align-items: center;
@@ -131,7 +131,7 @@
             const command = inputField.value.trim();
             if (!command) return;
 
-            // 1. Display the command in the HISTORY area
+            // Display command in History section
             historyDiv.innerHTML += promptSymbol + command + '\n';
             historyDiv.scrollTop = historyDiv.scrollHeight; // Auto-scroll history
             
@@ -140,7 +140,7 @@
             // Clear previous output message
             outputDiv.innerHTML = '<h3>Server Response</h3><span style="color: #ffccdd;">Processing...</span>';
 
-            // 2. Send command to the Flask backend
+            // Send command to the Flask backend
             fetch('/execute', {
                 method: 'POST',
                 headers: {
@@ -150,12 +150,9 @@
             })
             .then(response => response.json())
             .then(data => {
-                // 3. Display the response output in the dedicated OUTPUT area
+                // Display the response output in Output section
                 outputDiv.innerHTML = '<h3>Server Response</h3>'; // Clear 'Processing...'
                 outputDiv.innerHTML += data.output.replace(/\n/g, '<br>');
-                
-                // 4. Auto-scroll to the bottom of the output
-                outputDiv.scrollTop = outputDiv.scrollHeight;
             })
             .catch(error => {
                 console.error('Error:', error);

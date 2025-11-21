@@ -9,7 +9,7 @@ from typing import List, Dict, Any, Tuple
 from flask import Flask, render_template, request, jsonify
 
 # ==============================================================================
-# 1. LEXICAL ANALYZER DEFINITION
+# LEXICAL ANALYZER DEFINITION
 # ==============================================================================
 
 tokens = ['BLOCK','ADD','PRINT','VIEW',
@@ -68,7 +68,7 @@ def t_error(t):
     t.lexer.skip(1)
 
 # ==============================================================================
-# 2. SYNTAX ANALYSIS DEFINITION (PLYA/YACC) - MODIFIED FOR MULTIPLE BLOCKS
+# SYNTAX ANALYSIS DEFINITION
 # ==============================================================================
 
 def p_start(p):
@@ -90,7 +90,7 @@ def p_statement(p):
 
 def p_block_definition(p):
     'block_definition : BLOCK ID ASSIGN LPAREN attributes RPAREN'
-    # Renamed output type to distinguish from operations
+    
     p[0] = ('block_def', p[2], p[5]) 
 
 def p_block_operation(p):
@@ -157,7 +157,7 @@ def p_error(p):
         captured_output.write(f"Syntax error at {p.value!r} (line {p.lineno})\n")
 
 # ==============================================================================
-# 3. BLOCKCHAIN CLASS AND SEMANTIC FUNCTIONS
+# BLOCKCHAIN CLASS AND SEMANTIC FUNCTIONS
 # ==============================================================================
 
 class Blockchain:
@@ -181,7 +181,6 @@ class Blockchain:
             'data': self.current_data,
             'proof': proof,
             'previous_hash': previous_hash or self.hash(self.chain[-1]) 
-  
         }
         
         self.current_data = [] 
@@ -206,7 +205,7 @@ class Blockchain:
         # Get the latest block
         block = self.chain[-1]
         
-        # Calculate the hash for the latest block
+        # Calculate the hash for the block
         block_hash = self.hash(block) 
         
         # Convert the block to a readable JSON string
@@ -240,7 +239,7 @@ class Blockchain:
 
 # Global state to hold blockchains
 BLOCKCHAINS: Dict[str, Blockchain] = {} 
-# Global object to capture output from print statements (<- FIX: Initialization)
+# Global object to capture output from print statements
 captured_output = StringIO() 
 
 def get_py_type(type_str):
@@ -324,7 +323,7 @@ def do_run_operation(block_name: str):
     BLOCKCHAINS[block_name].run()
 
 # ==============================================================================
-# 4. EXECUTION DISPATCHER & FLASK INTEGRATION (MODIFIED)
+# EXECUTION DISPATCHER & FLASK INTEGRATION
 # ==============================================================================
 
 def execute_command(code: str) -> str:
@@ -391,7 +390,7 @@ def handle_command():
     data = request.get_json()
     command_input = data.get('command', '')
 
-    # Execution logic handles the parsing, semantics, and output capture
+    # Execution logic
     output = execute_command(command_input)
     
     return jsonify({'output': output})
